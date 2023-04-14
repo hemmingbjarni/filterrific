@@ -8,7 +8,17 @@
  *
  */
 
-
+function throttle(f, delay){
+    var timer = null;
+    return function(){
+        var context = this, args = arguments;
+        clearTimeout(timer);
+        timer = window.setTimeout(function(){
+            f.apply(context, args);
+        },
+        delay || 500);
+    };
+}
 
 // Create global Filterrific namespace
 if (typeof Filterrific === 'undefined') {
@@ -93,7 +103,7 @@ Filterrific.init = function() {
   $('#filterrific_filter').on(
     "keyup change",
     ":input",
-    Filterrific.submitFilterForm
+    throttle(Filterrific.submitFilterForm)
   );
   
   alert('Test');
