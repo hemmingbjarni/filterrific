@@ -106,8 +106,6 @@ Filterrific.init = function() {
     throttle(Filterrific.submitFilterForm)
   );
   
-  alert('Test');
-
   // Add periodic observer to selected inputs.
   // Use this for text fields you want to observe for change, e.g., a search input.
   $(".filterrific-periodically-observed").filterrific_observe_field(
