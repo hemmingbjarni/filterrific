@@ -33,25 +33,22 @@ module Filterrific
     def initialize_filterrific(model_class, filterrific_params, opts = {})
       f_params = (filterrific_params || {}).stringify_keys
       opts = opts.stringify_keys
-
-      pers_id = if false == opts['persistence_id']
+      pers_id = if opts["persistence_id"] == false
         nil
       else
-        opts['persistence_id'] || compute_default_persistence_id
+        "filter_" + (opts["persistence_id"] || compute_default_persistence_id)
       end
 
-      if (f_params.delete('reset_filterrific'))
-        # Reset query and session_persisted params
-        session[pers_id] = nil  if pers_id
-        redirect_to url_for({})  and return false # requires `or return` in calling action.
+      if f_params.delete("reset_filterrific")
+        cookies.delete(pers_id) if pers_id
+        redirect_to url_for({}) and return false
       end
 
       f_params = compute_filterrific_params(model_class, f_params, opts, pers_id)
 
       filterrific = Filterrific::ParamSet.new(model_class, f_params)
-      filterrific.select_options = opts['select_options']
-      session[pers_id] = filterrific.to_hash  if pers_id
-
+      filterrific.select_options = opts["select_options"]
+      cookies[pers_id] = filterrific.to_hash.to_json if pers_id
       filterrific
     end
 
