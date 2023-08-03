@@ -67,17 +67,18 @@ module Filterrific
     #   Defaults to true.
     # @param persistence_id [String, nil]
     def compute_filterrific_params(model_class, filterrific_params, opts, persistence_id)
-      opts = { "sanitize_params" => true }.merge(opts.stringify_keys)
+      opts = {"sanitize_params" => true}.merge(opts.stringify_keys)
       r = (
         filterrific_params.presence || # start with passed in params
+        (persistence_id && cookies["filter_#{persistence_id}"].present? && JSON.parse(cookies["filter_#{persistence_id}"])) || # then try cookie persisted params if persistence_id is present
         (persistence_id && session[persistence_id].presence) || # then try session persisted params if persistence_id is present
-        opts['default_filter_params'] || # then use passed in opts
+        opts["default_filter_params"] || # then use passed in opts
         model_class.filterrific_default_filter_params # finally use model_class defaults
       ).stringify_keys
-      r.slice!(*opts['available_filters'].map(&:to_s))  if opts['available_filters']
+      r.slice!(*opts["available_filters"].map(&:to_s)) if opts["available_filters"]
       # Sanitize params to prevent reflected XSS attack
       if opts["sanitize_params"]
-        r.each { |k,v| r[k] = sanitize_filterrific_param(r[k]) }
+        r.each { |k, v| r[k] = sanitize_filterrific_param(r[k]) }
       end
       r
     end
