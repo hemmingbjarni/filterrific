@@ -32,7 +32,7 @@ module Filterrific
 
     def compute_filterrific_params(model_class, filterrific_params, opts, persistence_id)
       opts = {"sanitize_params" => true}.merge(opts.stringify_keys)
-      persisted_params = persistence_id && cookies[persistence_id].present? ? JSON.parse(cookies[persistence_id]) : nil
+      persisted_params = persistence_id && cookies[persistence_id].present? ? JSON.parse(CGI::unescape(cookies[persistence_id])) : nil
       r = (
         filterrific_params.presence || 
         persisted_params ||
