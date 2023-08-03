@@ -12,14 +12,18 @@ module Filterrific
       else
         opts["persistence_id"] || compute_default_persistence_id
       end
-
+    
       if f_params.delete("reset_filterrific")
         cookies.delete(pers_id) if pers_id
         redirect_to url_for({}) and return false
       end
-
+    
       f_params = compute_filterrific_params(model_class, f_params, opts, pers_id)
-
+      
+      # retrieve previous filterrific params from the cookie
+      existing_params = pers_id && cookies[pers_id].present? ? JSON.parse(CGI::unescape(cookies[pers_id])) : nil
+      f_params = existing_params.merge(f_params) if existing_params
+      
       filterrific = Filterrific::ParamSet.new(model_class, f_params)
       filterrific.select_options = opts["select_options"]
       cookies[pers_id] = { value: filterrific.to_hash.to_json, expires: 1.year.from_now } if pers_id
