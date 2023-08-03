@@ -23,14 +23,10 @@ module Filterrific
       filterrific = Filterrific::ParamSet.new(model_class, f_params)
       filterrific.select_options = opts["select_options"]
     
-      # Always use the settings from the cookie if they exist
-      if pers_id && cookies[pers_id].present?
-        f_params = JSON.parse(CGI::unescape(cookies[pers_id]))
-        filterrific = Filterrific::ParamSet.new(model_class, f_params)
-        filterrific.select_options = opts["select_options"]
+      # Only set the cookie if filterrific_params is present
+      if filterrific_params.present?
+        cookies[pers_id] = { value: filterrific.to_hash.to_json, expires: 1.year.from_now } if pers_id
       end
-      
-      cookies[pers_id] = { value: filterrific.to_hash.to_json, expires: 1.year.from_now } if pers_id
     
       filterrific
     end
@@ -41,14 +37,18 @@ module Filterrific
 
     def compute_filterrific_params(model_class, filterrific_params, opts, persistence_id)
       opts = {"sanitize_params" => true}.merge(opts.stringify_keys)
-      persisted_params = persistence_id && cookies[persistence_id].present? ? JSON.parse(CGI::unescape(cookies[persistence_id])) : nil
+      
+      existing_params = persistence_id && cookies[persistence_id].present? ? JSON.parse(CGI::unescape(cookies[persistence_id])) : {}
+    
       r = (
-        filterrific_params.presence || 
-        persisted_params ||
-        opts["default_filter_params"] || 
-        model_class.filterrific_default_filter_params 
+        existing_params || # start with persisted params in cookies
+        filterrific_params.presence || # then try params from the request if persistence_id is present
+        opts["default_filter_params"] || # then use passed in opts
+        model_class.filterrific_default_filter_params # finally use model_class defaults
       ).stringify_keys
+      
       r.slice!(*opts["available_filters"].map(&:to_s)) if opts["available_filters"]
+      # Sanitize params to prevent reflected XSS attack
       if opts["sanitize_params"]
         r.each { |k, v| r[k] = sanitize_filterrific_param(r[k]) }
       end
