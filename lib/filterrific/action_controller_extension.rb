@@ -23,10 +23,14 @@ module Filterrific
       filterrific = Filterrific::ParamSet.new(model_class, f_params)
       filterrific.select_options = opts["select_options"]
     
-      # Only set the cookie if filterrific_params is present
-      if filterrific_params.present?
-        cookies[pers_id] = { value: filterrific.to_hash.to_json, expires: 1.year.from_now } if pers_id
+      # Always use the settings from the cookie if they exist
+      if pers_id && cookies[pers_id].present?
+        f_params = JSON.parse(CGI::unescape(cookies[pers_id]))
+        filterrific = Filterrific::ParamSet.new(model_class, f_params)
+        filterrific.select_options = opts["select_options"]
       end
+      
+      cookies[pers_id] = { value: filterrific.to_hash.to_json, expires: 1.year.from_now } if pers_id
     
       filterrific
     end
