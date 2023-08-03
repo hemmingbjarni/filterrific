@@ -36,19 +36,20 @@ module Filterrific
       pers_id = if opts["persistence_id"] == false
         nil
       else
-        "filter_" + (opts["persistence_id"] || compute_default_persistence_id)
+        opts["persistence_id"] || compute_default_persistence_id
       end
 
       if f_params.delete("reset_filterrific")
-        cookies.delete(pers_id) if pers_id
-        redirect_to url_for({}) and return false
+        # Reset query and session_persisted params
+        cookies.delete("filtercookie_#{pers_id}") if pers_id
+        redirect_to url_for({}) and return false # requires `or return` in calling action.
       end
 
       f_params = compute_filterrific_params(model_class, f_params, opts, pers_id)
 
       filterrific = Filterrific::ParamSet.new(model_class, f_params)
       filterrific.select_options = opts["select_options"]
-      cookies[pers_id] = filterrific.to_hash.to_json if pers_id
+      cookies["filtercookie_#{pers_id}"] = filterrific.to_hash.to_json if pers_id
       filterrific
     end
 
@@ -70,8 +71,7 @@ module Filterrific
       opts = {"sanitize_params" => true}.merge(opts.stringify_keys)
       r = (
         filterrific_params.presence || # start with passed in params
-        (persistence_id && cookies["filter_#{persistence_id}"].present? && JSON.parse(cookies["filter_#{persistence_id}"])) || # then try cookie persisted params if persistence_id is present
-        (persistence_id && session[persistence_id].presence) || # then try session persisted params if persistence_id is present
+        (persistence_id && JSON.parse(cookies["filtercookie_#{persistence_id}"]).presence) || # then try session persisted params if persistence_id is present
         opts["default_filter_params"] || # then use passed in opts
         model_class.filterrific_default_filter_params # finally use model_class defaults
       ).stringify_keys
