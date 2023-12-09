@@ -103,7 +103,7 @@ Filterrific.submitFilterForm = function(){
 Filterrific.init = function() {
   // Add change event handler to all Filterrific filter inputs.
   $('#filterrific_filter').on(
-    "keyup change",
+    "keyup",
     ":input",
     throttle(function(event) {
       console.log("Throttled Event Triggered:", event.type);
