@@ -29,9 +29,14 @@ if (typeof Filterrific === 'undefined') {
 
 // Define function to submit Filterrific filter form
 Filterrific.submitFilterForm = function(){
-  console.log("Form submission triggered");
+  console.log("Inside submitFilterForm function");
+
   var form = $(this).parents("form"),
       url = form.attr("action");
+
+  console.log("Form action URL:", url);
+  console.log("Form data:", form.serialize());
+
   // send before event
   $(form).trigger('loadingFilterrificResults');
   // turn on spinner
@@ -39,6 +44,7 @@ Filterrific.submitFilterForm = function(){
 
   // Abort previous ajax request
   if (Filterrific.lastRequest && Filterrific.lastRequest.readyState != 4) {
+    console.log("Aborting previous AJAX request");
     Filterrific.lastRequest.abort();
   }
 
@@ -49,10 +55,15 @@ Filterrific.submitFilterForm = function(){
     type: 'GET',
     dataType: 'script'
   }).done(function( msg ) {
+    console.log("AJAX request completed");
     // send after event
     $(form).trigger('loadedFilterrificResults');
     $('.filterrific_spinner').hide();
+  }).fail(function(jqXHR, textStatus) {
+    console.log("AJAX request failed:", textStatus);
   });
+
+  console.log("AJAX request sent");
 };
 
 
