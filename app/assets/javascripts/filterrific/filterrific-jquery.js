@@ -101,22 +101,24 @@ Filterrific.submitFilterForm = function(){
 
 
 Filterrific.init = function() {
-  // Add change event handler to all Filterrific filter inputs.
-  $('#filterrific_filter').on(
-    "keyup",
-    ":input",
-    throttle(function(event) {
-      console.log("Throttled Event Triggered:", event.type);
+  var lastVal = ''; // Variable to store the last value
+
+  $('#filterrific_filter').on("keyup", ":input", throttle(function(event) {
+    lastVal = $(this).val(); // Update lastVal on keyup
+    console.log("Form submission triggered by keyup. Value:", lastVal);
+    Filterrific.submitFilterForm();
+  }, 500));
+
+  $('#filterrific_filter').on("change", ":input", function(event) {
+    var currentVal = $(this).val();
+    if (currentVal !== lastVal) { // Check if the current value is different from the last value
+      lastVal = currentVal; // Update lastVal on change
+      console.log("Form submission triggered by change. New Value:", currentVal);
       Filterrific.submitFilterForm();
-    })
-  );
-  
-  // Add periodic observer to selected inputs.
-  // Use this for text fields you want to observe for change, e.g., a search input.
-  $(".filterrific-periodically-observed").filterrific_observe_field(
-    0.5,
-    Filterrific.submitFilterForm
-  );
+    } else {
+      console.log("Change event detected, but value is the same. No submission.");
+    }
+  });
 };
 
 
