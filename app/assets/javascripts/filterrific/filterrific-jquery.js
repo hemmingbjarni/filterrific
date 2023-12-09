@@ -29,6 +29,7 @@ if (typeof Filterrific === 'undefined') {
 
 // Define function to submit Filterrific filter form
 Filterrific.submitFilterForm = function(){
+  console.log("Form submission triggered");
   var form = $(this).parents("form"),
       url = form.attr("action");
   // send before event
@@ -76,6 +77,7 @@ Filterrific.submitFilterForm = function(){
         }
         var val = $this.val();
         if(prev != val){
+        console.log("Observed field change");
           prev = val;
           $this.map(callback); // invokes the callback on $this
         }
@@ -103,7 +105,10 @@ Filterrific.init = function() {
   $('#filterrific_filter').on(
     "keyup change",
     ":input",
-    throttle(Filterrific.submitFilterForm)
+    throttle(function(event) {
+      console.log("Throttled Event Triggered:", event.type);
+      Filterrific.submitFilterForm();
+    })
   );
   
   // Add periodic observer to selected inputs.
