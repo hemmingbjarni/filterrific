@@ -28,10 +28,10 @@ if (typeof Filterrific === 'undefined') {
 
 
 // Define function to submit Filterrific filter form
-Filterrific.submitFilterForm = function(){
+Filterrific.submitFilterForm = function(event){
   console.log("Inside submitFilterForm function");
 
-  var form = $(this).parents("form"),
+  var form = $(event.target).closest("form"),
       url = form.attr("action");
 
   console.log("Form action URL:", url);
@@ -114,22 +114,20 @@ Filterrific.submitFilterForm = function(){
 Filterrific.init = function() {
   var lastVal = ''; // Variable to store the last value
 
-  $('#filterrific_filter').on("keyup", ":input", throttle(function(event) {
-    lastVal = $(this).val(); // Update lastVal on keyup
-    console.log("Form submission triggered by keyup. Value:", lastVal);
-    Filterrific.submitFilterForm();
-  }, 500));
+$('#filterrific_filter').on("keyup", ":input", throttle(function(event) {
+  lastVal = $(this).val(); 
+  console.log("Form submission triggered by keyup. Value:", lastVal);
+  Filterrific.submitFilterForm(event);
+}, 500));
 
-  $('#filterrific_filter').on("change", ":input", function(event) {
-    var currentVal = $(this).val();
-    if (currentVal !== lastVal) { // Check if the current value is different from the last value
-      lastVal = currentVal; // Update lastVal on change
-      console.log("Form submission triggered by change. New Value:", currentVal);
-      Filterrific.submitFilterForm();
-    } else {
-      console.log("Change event detected, but value is the same. No submission.");
-    }
-  });
+$('#filterrific_filter').on("change", ":input", function(event) {
+  var currentVal = $(this).val();
+  if (currentVal !== lastVal) {
+    lastVal = currentVal;
+    console.log("Form submission triggered by change. New Value:", currentVal);
+    Filterrific.submitFilterForm(event);
+  }
+});
 };
 
 
